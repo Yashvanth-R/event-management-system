@@ -11,6 +11,15 @@ use App\Http\Controllers\AttendeeController;
 |--------------------------------------------------------------------------
 */
 
+// Health check route (simple test)
+Route::get('/health', function () {
+    return response()->json([
+        'status' => 'OK',
+        'timestamp' => now()->toISOString(),
+        'timezone' => config('app.timezone')
+    ]);
+});
+
 Route::middleware('api')->group(function () {
     // Event routes
     Route::prefix('events')->group(function () {
@@ -22,13 +31,4 @@ Route::middleware('api')->group(function () {
         Route::post('/{event_id}/register', [AttendeeController::class, 'register']);
         Route::get('/{event_id}/attendees', [AttendeeController::class, 'index']);
     });
-});
-
-// Health check route
-Route::get('/health', function () {
-    return response()->json([
-        'status' => 'OK',
-        'timestamp' => now()->toISOString(),
-        'timezone' => config('app.timezone')
-    ]);
 });

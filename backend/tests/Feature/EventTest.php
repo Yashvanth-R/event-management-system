@@ -4,13 +4,14 @@ namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 use App\Models\Event;
 use Carbon\Carbon;
 
 class EventTest extends TestCase
 {
-    use RefreshDatabase, WithFaker;
+    use DatabaseTransactions, WithFaker;
 
     public function test_can_create_event()
     {
@@ -71,6 +72,9 @@ class EventTest extends TestCase
 
     public function test_can_get_upcoming_events()
     {
+        // Clear any existing events
+        Event::query()->delete();
+        
         // Create past event
         Event::factory()->create([
             'start_time' => Carbon::now()->subDays(1),
