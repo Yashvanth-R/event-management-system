@@ -1,62 +1,72 @@
 # Event Management System
 
-A full-stack Event Management System built with Laravel (PHP) backend and Next.js frontend, featuring clean architecture, scalability, and data integrity.
+A modern full-stack Event Management System built with **NestJS** (TypeScript) backend and **Next.js** frontend, featuring beautiful UI, clean architecture, and robust data management with PostgreSQL and Prisma ORM.
 
 ## 🎯 Features Implemented
 
 ### ✅ Core Requirements
 - **Event Creation**: Create events with name, location, timing, and capacity
-- **Event Listing**: View all upcoming events
+- **Event Listing**: View all upcoming events with beautiful table interface
 - **Attendee Registration**: Register for events with capacity limits
-- **Attendee Management**: View paginated attendee lists
+- **Attendee Management**: View paginated attendee lists with modern UI
 - **Overbooking Prevention**: Automatic capacity management
 - **Duplicate Prevention**: Email uniqueness per event
-- **Timezone Support**: Events created in IST with proper timezone handling
+- **Real-time Updates**: Dynamic capacity tracking
+
+### ✅ Modern UI Features
+- **Beautiful Interface**: Professional sidebar navigation with gradient themes
+- **Responsive Design**: Mobile-friendly with modern card layouts
+- **Interactive Tables**: Hover effects, gradients, and smooth animations
+- **Loading States**: Elegant loading spinners and error handling
+- **Form Validation**: Real-time validation with visual feedback
+- **Modern Components**: Shadcn UI with custom styling enhancements
 
 ### ✅ Technical Features
-- **Clean Architecture**: MVC pattern with services layer
-- **Data Validation**: Comprehensive input validation and error handling
+- **NestJS Backend**: Modern TypeScript framework with decorators
+- **Prisma ORM**: Type-safe database operations with PostgreSQL
+- **Swagger Documentation**: Auto-generated API documentation
+- **Data Validation**: Comprehensive input validation with class-validator
 - **Database Integrity**: PostgreSQL with proper constraints and indexing
 - **Pagination**: Efficient attendee list pagination
-- **Unit Tests**: Comprehensive test coverage
-- **Modern UI**: Next.js with Shadcn UI components
-- **Responsive Design**: Mobile-friendly interface
+- **Docker Support**: Complete containerization setup
+- **TypeScript**: Full type safety across the stack
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- PHP 8.1+
-- Composer
 - Node.js 18+
 - PostgreSQL 12+
+- Docker (optional)
 
-### 1. Backend Setup (Laravel)
+### 1. Backend Setup (NestJS)
 
 ```bash
 # Navigate to backend directory
 cd backend
 
 # Install dependencies
-composer install
+npm install
 
 # Setup environment
-cp .env.example .env
-php artisan key:generate
+cp .env.nestjs .env
 
 # Configure database in .env
-DB_CONNECTION=pgsql
-DB_HOST=127.0.0.1
-DB_PORT=5432
-DB_DATABASE=event_management
-DB_USERNAME=your_username
-DB_PASSWORD=your_password
-APP_TIMEZONE=Asia/Kolkata
+DATABASE_URL="postgresql://username:password@localhost:5432/event_management?schema=public"
+NODE_ENV=development
+PORT=8000
+FRONTEND_URL=http://localhost:3000
 
-# Run migrations
-php artisan migrate
+# Generate Prisma client
+npm run prisma:generate
 
-# Start server
-php artisan serve
+# Run database migrations
+npm run prisma:migrate
+
+# Seed database (optional)
+npm run prisma:seed
+
+# Start development server
+npm run start:dev
 ```
 
 ### 2. Frontend Setup (Next.js)
@@ -68,65 +78,79 @@ cd frontend
 # Install dependencies
 npm install
 
-# Setup environment
-cp .env.local.example .env.local
-
-# Configure API URL in .env.local
-NEXT_PUBLIC_API_URL=http://localhost:8000/api
+# Configure API URL (already set in code)
+# NEXT_PUBLIC_API_URL=http://localhost:8000/api
 
 # Start development server
 npm run dev
 ```
 
-### 3. Access Application
+### 3. Docker Setup (Alternative)
+
+```bash
+# Start all services with Docker
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+```
+
+### 4. Access Application
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:8000/api
-- **Health Check**: http://localhost:8000/api/health
+- **API Documentation**: http://localhost:8000/api/docs
+- **Prisma Studio**: `npm run prisma:studio` (in backend directory)
 
 ## 📡 API Endpoints
 
 ### Events
 - `POST /api/events` - Create new event
 - `GET /api/events` - List upcoming events
-- `GET /api/events/{id}` - Get specific event
+- `GET /api/events/:id` - Get specific event
 
 ### Attendees
-- `POST /api/events/{event_id}/register` - Register attendee
-- `GET /api/events/{event_id}/attendees` - Get event attendees 
+- `POST /api/events/:eventId/attendees` - Register attendee
+- `GET /api/events/:eventId/attendees` - Get event attendees (paginated)
+- `GET /api/events/:eventId/attendees/all` - Get all event attendees
 
-## 🗄️ Database Schema
+## 🗄️ Database Schema (Prisma)
 
-### Events Table
-```sql
-CREATE TABLE events (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    location VARCHAR(255) NOT NULL,
-    start_time TIMESTAMP NOT NULL,
-    end_time TIMESTAMP NOT NULL,
-    max_capacity INTEGER NOT NULL,
-    current_attendees INTEGER DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+### Events Model
+```prisma
+model Event {
+  id                Int        @id @default(autoincrement())
+  name              String
+  location          String
+  startTime         DateTime   @map("start_time")
+  endTime           DateTime   @map("end_time")
+  maxCapacity       Int        @map("max_capacity")
+  currentAttendees  Int        @default(0) @map("current_attendees")
+  createdAt         DateTime   @default(now()) @map("created_at")
+  updatedAt         DateTime   @updatedAt @map("updated_at")
+  
+  attendees         Attendee[]
 
-CREATE INDEX idx_events_start_end_time ON events(start_time, end_time);
+  @@map("events")
+}
 ```
 
-### Attendees Table
-```sql
-CREATE TABLE attendees (
-    id SERIAL PRIMARY KEY,
-    event_id INTEGER REFERENCES events(id) ON DELETE CASCADE,
-    name VARCHAR(255) NOT NULL,
-    email VARCHAR(255) NOT NULL,
-    registered_at TIMESTAMP NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(event_id, email)
-);
+### Attendees Model
+```prisma
+model Attendee {
+  id           Int      @id @default(autoincrement())
+  eventId      Int      @map("event_id")
+  name         String
+  email        String
+  registeredAt DateTime @map("registered_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  
+  event        Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
-CREATE INDEX idx_attendees_event_id ON attendees(event_id);
+  @@unique([eventId, email])
+  @@index([eventId])
+  @@map("attendees")
+}
 ```
 
 ## 🧪 Running Tests
@@ -134,113 +158,174 @@ CREATE INDEX idx_attendees_event_id ON attendees(event_id);
 ```bash
 # Backend tests
 cd backend
-php artisan test
+npm run test
 
-# Test specific feature
-php artisan test --filter EventTest
+# E2E tests
+npm run test:e2e
+
+# Test coverage
+npm run test:cov
 ```
 
-## 🔧 Technical Decisions & Assumptions
+## 🔧 Technical Stack & Decisions
 
-### Backend (Laravel)
-- **PostgreSQL**: Chosen for data integrity and advanced features
-- **Services Layer**: Separation of business logic from controllers
-- **Resource Classes**: Consistent API response formatting
-- **Eloquent ORM**: Type-safe database interactions
-- **Form Requests**: Centralized validation logic
+### Backend (NestJS + Prisma)
+- **NestJS**: Modern TypeScript framework with decorators and dependency injection
+- **Prisma ORM**: Type-safe database client with migrations
+- **PostgreSQL**: Robust relational database with advanced features
+- **Class Validator**: Decorator-based validation
+- **Swagger**: Auto-generated API documentation
+- **Docker**: Containerization support
 
-### Frontend (Next.js)
+### Frontend (Next.js + Shadcn UI)
+- **Next.js 14**: React framework with App Router
 - **Shadcn UI**: Modern, accessible component library
-- **TypeScript**: Type safety and better developer experience
-- **Zod**: Runtime validation and type inference
-- **React Hook Form**: Efficient form handling
-- **Axios**: HTTP client with interceptors
+- **TypeScript**: Full type safety
+- **Tailwind CSS**: Utility-first CSS framework
+- **Lucide React**: Beautiful icon library
+- **Custom Styling**: Enhanced with gradients and animations
 
 ### Architecture Decisions
-- **Clean Architecture**: Clear separation of concerns
-- **API-First**: Backend as API, frontend as consumer
-- **Timezone Handling**: UTC storage, local display
-- **Error Handling**: Consistent error responses
-- **Validation**: Both client and server-side validation
+- **Clean Architecture**: Modular structure with clear separation
+- **API-First**: RESTful API with comprehensive documentation
+- **Type Safety**: End-to-end TypeScript implementation
+- **Modern UI**: Professional design with interactive elements
+- **Error Handling**: Comprehensive error responses and user feedback
+- **Performance**: Optimized queries and efficient rendering
 
-## 🌐 Timezone Management
+## 🎨 UI/UX Features
 
-- Events stored in UTC in database
-- Created in IST timezone (Asia/Kolkata)
-- Frontend displays in user's local timezone
-- API responses include both ISO and formatted times
+### Design System
+- **Color Palette**: Professional blue/purple/green theme
+- **Typography**: Clear hierarchy with proper font weights
+- **Spacing**: Consistent 16px/24px/32px spacing system
+- **Shadows**: Depth and modern feel with hover animations
+- **Gradients**: Beautiful color transitions throughout
+
+### Interactive Elements
+- **Sidebar Navigation**: Dark gradient with active state highlighting
+- **Data Tables**: Professional tables with hover effects and proper alignment
+- **Forms**: Modern inputs with focus states and validation feedback
+- **Cards**: Clean cards with shadows and hover animations
+- **Buttons**: Gradient backgrounds with smooth transitions
+
+### Responsive Design
+- **Mobile-First**: Optimized for all screen sizes
+- **Flexible Layouts**: CSS Grid and Flexbox for responsive design
+- **Touch-Friendly**: Proper touch targets and interactions
 
 ## 📊 Performance Optimizations
 
-- Database indexing on frequently queried columns
-- Pagination for large datasets
-- Efficient API resource transformations
-- Frontend code splitting and lazy loading
-- Optimized database queries with proper relationships
+- **Database Indexing**: Optimized queries with proper indexes
+- **Pagination**: Efficient data loading for large datasets
+- **Type Safety**: Compile-time error prevention
+- **Code Splitting**: Optimized bundle sizes
+- **Caching**: Efficient data fetching and caching strategies
 
 ## 🔒 Security Features
 
-- Input validation and sanitization
-- SQL injection prevention (Eloquent ORM)
-- XSS protection
-- CSRF protection ready
-- Environment variable protection
-- Unique constraints for data integrity
+- **Input Validation**: Comprehensive validation with class-validator
+- **SQL Injection Prevention**: Prisma ORM protection
+- **Type Safety**: Runtime and compile-time type checking
+- **CORS Configuration**: Proper cross-origin resource sharing
+- **Environment Variables**: Secure configuration management
+- **Database Constraints**: Unique constraints and foreign keys
 
 ## 📁 Project Structure
 
 ```
 event-management-system/
 ├── README.md
-├── API_DOCUMENTATION.md
-├── SETUP.md
+├── docker-compose.yml
 ├── .gitignore
-├── backend/
-│   ├── app/
-│   │   ├── Http/
-│   │   │   ├── Controllers/
-│   │   │   │   ├── EventController.php
-│   │   │   │   └── AttendeeController.php
-│   │   │   ├── Requests/
-│   │   │   │   ├── CreateEventRequest.php
-│   │   │   │   └── RegisterAttendeeRequest.php
-│   │   │   └── Resources/
-│   │   │       ├── EventResource.php
-│   │   │       └── AttendeeResource.php
-│   │   ├── Models/
-│   │   │   ├── Event.php
-│   │   │   └── Attendee.php
-│   │   ├── Services/
-│   │   │   ├── EventService.php
-│   │   │   └── AttendeeService.php
-│   │   └── Exceptions/
-│   │       └── EventCapacityExceededException.php
-│   ├── database/
-│   │   ├── migrations/
-│   │   └── factories/
-│   ├── tests/Feature/
-│   ├── routes/api.php
-│   ├── composer.json
-│   └── .env.example
-└── frontend/
+├── backend/                          # NestJS Backend
+│   ├── src/
+│   │   ├── main.ts                   # Application entry point
+│   │   ├── app.module.ts             # Root module
+│   │   ├── prisma/                   # Prisma service
+│   │   │   ├── prisma.module.ts
+│   │   │   └── prisma.service.ts
+│   │   ├── events/                   # Events module
+│   │   │   ├── events.controller.ts
+│   │   │   ├── events.service.ts
+│   │   │   ├── events.module.ts
+│   │   │   ├── dto/
+│   │   │   │   └── create-event.dto.ts
+│   │   │   └── entities/
+│   │   │       └── event.entity.ts
+│   │   └── attendees/                # Attendees module
+│   │       ├── attendees.controller.ts
+│   │       ├── attendees.service.ts
+│   │       ├── attendees.module.ts
+│   │       ├── dto/
+│   │       │   └── register-attendee.dto.ts
+│   │       └── entities/
+│   │           └── attendee.entity.ts
+│   ├── prisma/
+│   │   ├── schema.prisma             # Database schema
+│   │   └── seed.ts                   # Database seeding
+│   ├── package.json
+│   ├── tsconfig.json
+│   ├── nest-cli.json
+│   └── Dockerfile.nestjs
+└── frontend/                         # Next.js Frontend
     ├── src/
-    │   ├── app/
+    │   ├── app/                      # App Router
+    │   │   ├── layout.tsx            # Root layout with sidebar
+    │   │   ├── page.tsx              # Home page
     │   │   ├── events/
+    │   │   │   ├── page.tsx          # Events list
+    │   │   │   └── [id]/
+    │   │   │       └── attendees/
+    │   │   │           └── page.tsx  # Event attendees
+    │   │   ├── attendees/
+    │   │   │   └── page.tsx          # All attendees
     │   │   ├── create-event/
-    │   │   └── layout.tsx
+    │   │   │   └── page.tsx          # Create event form
+    │   │   └── globals.css           # Global styles
     │   ├── components/
-    │   │   ├── ui/
-    │   │   ├── EventCard.tsx
-    │   │   ├── EventForm.tsx
-    │   │   ├── AttendeeForm.tsx
-    │   │   └── AttendeeList.tsx
+    │   │   ├── ui/                   # Shadcn UI components
+    │   │   │   ├── button.tsx
+    │   │   │   ├── input.tsx
+    │   │   │   ├── label.tsx
+    │   │   │   └── card.tsx
+    │   │   ├── Sidebar.tsx           # Navigation sidebar
+    │   │   ├── EventCard.tsx         # Event display card
+    │   │   ├── EventForm.tsx         # Event creation form
+    │   │   ├── AttendeeForm.tsx      # Attendee registration
+    │   │   └── AttendeeList.tsx      # Attendee display
     │   ├── lib/
-    │   │   ├── api.ts
-    │   │   └── utils.ts
-    │   └── types/index.ts
+    │   │   ├── api.ts                # API client
+    │   │   └── utils.ts              # Utility functions
+    │   └── types/
+    │       └── index.ts              # TypeScript types
     ├── package.json
-    └── .env.local.example
+    ├── tailwind.config.js
+    ├── tsconfig.json
+    └── next.config.js
 ```
+
+## 🐳 Docker Support
+
+The project includes full Docker support with PostgreSQL, NestJS backend, and Next.js frontend:
+
+```bash
+# Start all services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f backend
+docker-compose logs -f frontend
+
+# Stop services
+docker-compose down
+```
+
+## 📚 Documentation
+
+- **API Documentation**: Available at `/api/docs` when running the backend
+- **Prisma Studio**: Database GUI available via `npm run prisma:studio`
+- **Setup Guide**: Detailed setup instructions in `backend/setup-nestjs.md`
 
 ## 📄 License
 
