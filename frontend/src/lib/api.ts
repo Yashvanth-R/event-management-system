@@ -68,4 +68,33 @@ export const eventApi = {
   },
 };
 
+export const attendeeApi = {
+  // Create a new attendee and assign to event
+  createAttendee: async (data: { name: string; email: string; eventId: number }): Promise<ApiResponse<Attendee>> => {
+    const response = await api.post('/attendees', data);
+    return response.data;
+  },
+
+  // Get all attendees across all events
+  getAllAttendees: async (page = 1, limit = 15, eventId?: number): Promise<PaginatedResponse<Attendee>> => {
+    const params: any = { page, limit };
+    if (eventId) params.eventId = eventId;
+    
+    const response = await api.get('/attendees', { params });
+    return response.data;
+  },
+
+  // Get a specific attendee
+  getAttendee: async (id: number): Promise<ApiResponse<Attendee>> => {
+    const response = await api.get(`/attendees/${id}`);
+    return response.data;
+  },
+
+  // Remove an attendee
+  removeAttendee: async (id: number): Promise<ApiResponse<void>> => {
+    const response = await api.delete(`/attendees/${id}`);
+    return response.data;
+  },
+};
+
 export default api;

@@ -56,102 +56,288 @@ export default function EventDetailsPage() {
 
   if (loading) {
     return (
-      <div className="text-center py-8">
-        <div className="text-lg">Loading event details...</div>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '96px 0' }}>
+        <div 
+          style={{
+            width: '64px',
+            height: '64px',
+            background: '#dbeafe',
+            borderRadius: '16px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: '24px'
+          }}
+        >
+          <div style={{ width: '32px', height: '32px', border: '3px solid #2563eb', borderTop: '3px solid transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+        </div>
+        <h2 style={{ fontSize: '24px', fontWeight: '600', color: '#111827', margin: '0 0 8px 0' }}>Loading Event Details</h2>
+        <p style={{ color: '#6b7280', margin: 0 }}>Getting event information...</p>
       </div>
     );
   }
 
   if (error || !event) {
     return (
-      <div className="text-center py-8">
-        <div className="text-red-600 mb-4">{error || 'Event not found'}</div>
-        <Button onClick={() => router.back()}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '96px 0' }}>
+        <div 
+          style={{
+            width: '64px',
+            height: '64px',
+            background: '#fecaca',
+            borderRadius: '16px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: '24px'
+          }}
+        >
+          <div style={{ fontSize: '32px' }}>⚠️</div>
+        </div>
+        <h2 style={{ fontSize: '24px', fontWeight: '600', color: '#111827', margin: '0 0 8px 0' }}>Event Not Found</h2>
+        <p style={{ color: '#6b7280', margin: '0 0 24px 0' }}>{error || 'The requested event could not be found'}</p>
+        <button 
+          onClick={() => router.back()}
+          style={{
+            padding: '12px 24px',
+            background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            fontSize: '14px',
+            fontWeight: '500',
+            cursor: 'pointer'
+          }}
+        >
           Go Back
-        </Button>
+        </button>
       </div>
     );
   }
 
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  };
+
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="outline" onClick={() => router.back()}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back
-        </Button>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <button 
+          onClick={() => router.back()}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 16px',
+            color: '#1d4ed8',
+            border: '1px solid #bfdbfe',
+            borderRadius: '8px',
+            fontSize: '14px',
+            fontWeight: '500',
+            background: 'transparent',
+            cursor: 'pointer',
+            transition: 'all 0.2s'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = '#eff6ff';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'transparent';
+          }}
+        >
+          <ArrowLeft style={{ width: '16px', height: '16px' }} />
+          Back to Events
+        </button>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-2xl">
-            <Calendar className="h-6 w-6" />
-            {event.name}
-          </CardTitle>
-          <CardDescription className="flex items-center gap-2 text-lg">
-            <MapPin className="h-5 w-5" />
-            {event.location}
-          </CardDescription>
-        </CardHeader>
-        
-        <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <div className="flex items-start gap-3">
-                <Clock className="h-5 w-5 mt-1" />
-                <div>
-                  <div className="font-medium">Event Schedule</div>
-                  <div className="text-sm text-muted-foreground">
-                    <div>Start: {formatDateTime(event.start_time)}</div>
-                    <div>End: {formatDateTime(event.end_time)}</div>
-                  </div>
-                </div>
+      {/* Event Details Card */}
+      <div 
+        style={{
+          background: 'white',
+          borderRadius: '16px',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.1)',
+          border: '1px solid #f3f4f6',
+          overflow: 'hidden'
+        }}
+      >
+        {/* Event Header */}
+        <div style={{ padding: '32px', borderBottom: '1px solid #f3f4f6' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
+            <div 
+              style={{
+                width: '64px',
+                height: '64px',
+                background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                borderRadius: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              <Calendar style={{ width: '32px', height: '32px', color: 'white' }} />
+            </div>
+            <div>
+              <h1 style={{ fontSize: '36px', fontWeight: 'bold', color: '#111827', margin: '0 0 8px 0' }}>{event.name}</h1>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#6b7280', fontSize: '16px' }}>
+                <MapPin style={{ width: '16px', height: '16px' }} />
+                {event.location}
               </div>
-              
-              <div className="flex items-start gap-3">
-                <Users className="h-5 w-5 mt-1" />
+            </div>
+          </div>
+        </div>
+
+        {/* Event Details */}
+        <div style={{ padding: '32px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '32px' }}>
+            {/* Schedule Info */}
+            <div>
+              <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#111827', margin: '0 0 16px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Clock style={{ width: '20px', height: '20px', color: '#7c3aed' }} />
+                Event Schedule
+              </h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <div>
-                  <div className="font-medium">Attendance</div>
-                  <div className="text-sm text-muted-foreground">
-                    {event.current_attendees} / {event.max_capacity} registered
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                    <div 
-                      className="bg-blue-600 h-2 rounded-full" 
-                      style={{ 
-                        width: `${(event.current_attendees / event.max_capacity) * 100}%` 
-                      }}
-                    ></div>
-                  </div>
+                  <div style={{ fontSize: '14px', fontWeight: '600', color: '#374151', marginBottom: '4px' }}>Start Time</div>
+                  <div style={{ fontSize: '16px', color: '#111827' }}>{formatDate(event.start_time)}</div>
+                  <div style={{ fontSize: '14px', color: '#6b7280' }}>{formatTime(event.start_time)}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '14px', fontWeight: '600', color: '#374151', marginBottom: '4px' }}>End Time</div>
+                  <div style={{ fontSize: '16px', color: '#111827' }}>{formatDate(event.end_time)}</div>
+                  <div style={{ fontSize: '14px', color: '#6b7280' }}>{formatTime(event.end_time)}</div>
                 </div>
               </div>
             </div>
 
-            <div className="space-y-4">
-              <div className="flex flex-col gap-2">
-                <Button asChild variant="outline">
-                  <Link href={`/events/${event.id}/attendees`}>
-                    View Attendees ({event.current_attendees})
-                  </Link>
-                </Button>
-                
-                {event.has_capacity ? (
-                  <Button onClick={() => setShowRegistrationForm(!showRegistrationForm)}>
-                    {showRegistrationForm ? 'Hide Registration' : 'Register for Event'}
-                  </Button>
-                ) : (
-                  <Button disabled>
-                    Event Full
-                  </Button>
-                )}
-              </div>
-              
-              {!event.has_capacity && (
-                <div className="text-red-600 text-sm">
-                  This event has reached maximum capacity
+            {/* Capacity Info */}
+            <div>
+              <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#111827', margin: '0 0 16px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Users style={{ width: '20px', height: '20px', color: '#059669' }} />
+                Attendance
+              </h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '14px', color: '#6b7280' }}>Registered</span>
+                  <span style={{ fontSize: '16px', fontWeight: '600', color: '#111827' }}>
+                    {event.current_attendees} / {event.max_capacity}
+                  </span>
                 </div>
-              )}
+                
+                {/* Progress Bar */}
+                <div style={{ width: '100%', height: '8px', background: '#f3f4f6', borderRadius: '4px', overflow: 'hidden' }}>
+                  <div 
+                    style={{ 
+                      height: '100%',
+                      background: event.has_capacity ? 'linear-gradient(135deg, #059669 0%, #047857 100%)' : '#dc2626',
+                      borderRadius: '4px',
+                      width: `${(event.current_attendees / event.max_capacity) * 100}%`,
+                      transition: 'width 0.3s ease'
+                    }}
+                  ></div>
+                </div>
+                
+                <div style={{ fontSize: '14px', color: event.has_capacity ? '#059669' : '#dc2626', fontWeight: '500' }}>
+                  {event.has_capacity ? `${event.remaining_capacity} spots remaining` : 'Event is full'}
+                </div>
+              </div>
             </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div style={{ display: 'flex', gap: '16px', marginTop: '32px', paddingTop: '24px', borderTop: '1px solid #f3f4f6' }}>
+            <Link 
+              href={`/events/${event.id}/attendees`}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '12px 20px',
+                color: '#1d4ed8',
+                border: '1px solid #bfdbfe',
+                borderRadius: '12px',
+                fontSize: '14px',
+                fontWeight: '500',
+                textDecoration: 'none',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#eff6ff';
+                e.currentTarget.style.borderColor = '#93c5fd';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'transparent';
+                e.currentTarget.style.borderColor = '#bfdbfe';
+              }}
+            >
+              <Users style={{ width: '16px', height: '16px' }} />
+              View Attendees ({event.current_attendees})
+            </Link>
+            
+            {event.has_capacity ? (
+              <button 
+                onClick={() => setShowRegistrationForm(!showRegistrationForm)}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '12px 20px',
+                  background: showRegistrationForm ? '#f3f4f6' : 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+                  color: showRegistrationForm ? '#374151' : 'white',
+                  border: 'none',
+                  borderRadius: '12px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  if (!showRegistrationForm) {
+                    e.currentTarget.style.background = 'linear-gradient(135deg, #047857 0%, #065f46 100%)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!showRegistrationForm) {
+                    e.currentTarget.style.background = 'linear-gradient(135deg, #059669 0%, #047857 100%)';
+                  }
+                }}
+              >
+                {showRegistrationForm ? 'Hide Registration' : 'Register for Event'}
+              </button>
+            ) : (
+              <button 
+                disabled
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '12px 20px',
+                  background: '#f3f4f6',
+                  color: '#9ca3af',
+                  border: 'none',
+                  borderRadius: '12px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'not-allowed'
+                }}
+              >
+                Event Full
+              </button>
+            )}
           </div>
         </CardContent>
       </Card>
