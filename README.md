@@ -31,13 +31,6 @@ A modern full-stack Event Management System built with **NestJS** (TypeScript) b
 - **Docker Support**: Complete containerization setup
 - **TypeScript**: Full type safety across the stack
 
-## 🚀 Quick Start
-
-### Prerequisites
-- Node.js 18+
-- PostgreSQL 12+
-- Docker (optional)
-
 ### 1. Backend Setup (NestJS)
 
 ```bash
@@ -153,20 +146,6 @@ model Attendee {
 }
 ```
 
-## 🧪 Running Tests
-
-```bash
-# Backend tests
-cd backend
-npm run test
-
-# E2E tests
-npm run test:e2e
-
-# Test coverage
-npm run test:cov
-```
-
 ## 🔧 Technical Stack & Decisions
 
 ### Backend (NestJS + Prisma)
@@ -213,23 +192,6 @@ npm run test:cov
 - **Mobile-First**: Optimized for all screen sizes
 - **Flexible Layouts**: CSS Grid and Flexbox for responsive design
 - **Touch-Friendly**: Proper touch targets and interactions
-
-## 📊 Performance Optimizations
-
-- **Database Indexing**: Optimized queries with proper indexes
-- **Pagination**: Efficient data loading for large datasets
-- **Type Safety**: Compile-time error prevention
-- **Code Splitting**: Optimized bundle sizes
-- **Caching**: Efficient data fetching and caching strategies
-
-## 🔒 Security Features
-
-- **Input Validation**: Comprehensive validation with class-validator
-- **SQL Injection Prevention**: Prisma ORM protection
-- **Type Safety**: Runtime and compile-time type checking
-- **CORS Configuration**: Proper cross-origin resource sharing
-- **Environment Variables**: Secure configuration management
-- **Database Constraints**: Unique constraints and foreign keys
 
 ## 📁 Project Structure
 
