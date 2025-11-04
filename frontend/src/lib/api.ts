@@ -55,14 +55,14 @@ export const eventApi = {
 
   // Register attendee for event
   registerAttendee: async (eventId: number, data: RegisterAttendeeData): Promise<ApiResponse<Attendee>> => {
-    const response = await api.post(`/events/${eventId}/register`, data);
+    const response = await api.post(`/events/${eventId}/attendees`, data);
     return response.data;
   },
 
   // Get attendees for an event
-  getEventAttendees: async (eventId: number, page = 1, perPage = 15): Promise<PaginatedResponse<Attendee>> => {
+  getEventAttendees: async (eventId: number, page = 1, limit = 15): Promise<PaginatedResponse<Attendee>> => {
     const response = await api.get(`/events/${eventId}/attendees`, {
-      params: { page, per_page: perPage }
+      params: { page, limit }
     });
     return response.data;
   },

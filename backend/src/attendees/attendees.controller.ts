@@ -101,9 +101,11 @@ export class AttendeesController {
   })
   async findEventAttendees(
     @Param('eventId', ParseIntPipe) eventId: number,
-    @Query('page', ParseIntPipe) page: number = 1,
-    @Query('limit', ParseIntPipe) limit: number = 15,
+    @Query('page') pageParam?: string,
+    @Query('limit') limitParam?: string,
   ) {
+    const page = pageParam ? parseInt(pageParam, 10) : 1;
+    const limit = limitParam ? parseInt(limitParam, 10) : 15;
     try {
       const result = await this.attendeesService.findEventAttendees(
         eventId,

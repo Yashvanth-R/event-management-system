@@ -20,6 +20,13 @@ export default function EventAttendeesPage() {
   useEffect(() => {
     const fetchEvent = async () => {
       try {
+        // Validate eventId
+        if (!eventId || isNaN(eventId)) {
+          setError('Invalid event ID');
+          setLoading(false);
+          return;
+        }
+
         const response = await eventApi.getEvent(eventId);
         if (response.success && response.data) {
           setEvent(response.data);
@@ -33,9 +40,7 @@ export default function EventAttendeesPage() {
       }
     };
 
-    if (eventId) {
-      fetchEvent();
-    }
+    fetchEvent();
   }, [eventId]);
 
   if (loading) {
