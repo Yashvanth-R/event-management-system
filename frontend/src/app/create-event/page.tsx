@@ -1,13 +1,16 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
 import { ArrowLeft, Calendar, MapPin, Users, Clock } from 'lucide-react';
+import { eventApi } from '@/lib/api';
 
 export default function CreateEventPage() {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     name: '',
     location: '',
@@ -15,11 +18,73 @@ export default function CreateEventPage() {
     end_time: '',
     capacity: ''
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission here
-    console.log('Form submitted:', formData);
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Validate form data
+      if (!formData.name || !formData.location || !formData.start_time || !formData.end_time || !formData.capacity) {
+        setError('Please fill in all fields');
+        setLoading(false);
+        return;
+      }
+
+      // Convert capacity to number
+      const capacity = parseInt(formData.capacity);
+      if (isNaN(capacity) || capacity < 1) {
+        setError('Capacity must be a valid number greater than 0');
+        setLoading(false);
+        return;
+      }
+
+      // Validate dates
+      const startTime = new Date(formData.start_time);
+      const endTime = new Date(formData.end_time);
+      
+      if (startTime >= endTime) {
+        setError('End time must be after start time');
+        setLoading(false);
+        return;
+      }
+
+      if (startTime <= new Date()) {
+        setError('Start time must be in the future');
+        setLoading(false);
+        return;
+      }
+
+      // Create event data
+      const eventData = {
+        name: formData.name,
+        location: formData.location,
+        start_time: formData.start_time,
+        end_time: formData.end_time,
+        max_capacity: capacity
+      };
+
+      // Call API to create event
+      const response = await eventApi.createEvent(eventData);
+
+      if (response.success) {
+        // Show success message briefly, then redirect
+        setSuccess(true);
+        setTimeout(() => {
+          router.push('/events');
+        }, 1500);
+      } else {
+        setError(response.message || 'Failed to create event');
+      }
+    } catch (err: any) {
+      setError(err.message || 'An error occurred while creating the event');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -76,6 +141,44 @@ export default function CreateEventPage() {
         }}
       >
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+          {/* Error Message */}
+          {error && (
+            <div 
+              style={{
+                padding: '16px',
+                background: '#fef2f2',
+                border: '1px solid #fecaca',
+                borderRadius: '12px',
+                color: '#dc2626',
+                fontSize: '14px',
+                fontWeight: '500'
+              }}
+            >
+              {error}
+            </div>
+          )}
+
+          {/* Success Message */}
+          {success && (
+            <div 
+              style={{
+                padding: '16px',
+                background: '#f0fdf4',
+                border: '1px solid #bbf7d0',
+                borderRadius: '12px',
+                color: '#166534',
+                fontSize: '14px',
+                fontWeight: '500',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+            >
+              <div style={{ fontSize: '16px' }}>✅</div>
+              Event created successfully! Redirecting to events page...
+            </div>
+          )}
+
           {/* Row 1: Name and Location */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -306,31 +409,52 @@ export default function CreateEventPage() {
           <div style={{ display: 'flex', gap: '16px', paddingTop: '24px' }}>
             <button
               type="submit"
+              disabled={loading || success}
               style={{
                 flex: 1,
                 height: '48px',
-                background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                background: (loading || success) ? '#9ca3af' : 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
                 color: 'white',
                 border: 'none',
                 borderRadius: '12px',
                 fontSize: '16px',
                 fontWeight: '600',
-                cursor: 'pointer',
-                boxShadow: '0 10px 25px -5px rgba(37, 99, 235, 0.25)',
-                transition: 'all 0.2s'
+                cursor: (loading || success) ? 'not-allowed' : 'pointer',
+                boxShadow: (loading || success) ? 'none' : '0 10px 25px -5px rgba(37, 99, 235, 0.25)',
+                transition: 'all 0.2s',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px'
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%)';
-                e.currentTarget.style.boxShadow = '0 20px 40px -10px rgba(37, 99, 235, 0.4)';
-                e.currentTarget.style.transform = 'translateY(-2px)';
+                if (!loading && !success) {
+                  e.currentTarget.style.background = 'linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%)';
+                  e.currentTarget.style.boxShadow = '0 20px 40px -10px rgba(37, 99, 235, 0.4)';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                }
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)';
-                e.currentTarget.style.boxShadow = '0 10px 25px -5px rgba(37, 99, 235, 0.25)';
-                e.currentTarget.style.transform = 'translateY(0)';
+                if (!loading && !success) {
+                  e.currentTarget.style.background = 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)';
+                  e.currentTarget.style.boxShadow = '0 10px 25px -5px rgba(37, 99, 235, 0.25)';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                }
               }}
             >
-              Create Event
+              {loading && (
+                <div 
+                  style={{
+                    width: '16px',
+                    height: '16px',
+                    border: '2px solid white',
+                    borderTop: '2px solid transparent',
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite'
+                  }}
+                ></div>
+              )}
+              {loading ? 'Creating...' : success ? 'Created!' : 'Create Event'}
             </button>
             <Link 
               href="/events"
